@@ -1,0 +1,23 @@
+{
+  "name": "primary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dictionary.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cinqueincinque/cinque-in-cinque.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cinqueincinque/cinque-in-cinque/issues"
+  },
+  "homepage": "https://github.com/cinqueincinque/cinque-in-cinque#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
