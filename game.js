@@ -5,8 +5,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "1.0.0";
-  const TOTAL_SECONDS = 300; 
+  const TOTAL_SECONDS = 300; // 5 minuti totali
   const ROUND_LENGTHS = [4, 5, 6, 7, 8];
 
   let currentPuzzle = null;
@@ -65,7 +64,7 @@
     activeWordLength = ROUND_LENGTHS[currentRoundIndex];
 
     if (gameTag) {
-      gameTag.textContent = `v${APP_VERSION} • Giorno #${currentPuzzle.dayNumber}`;
+      gameTag.textContent = `Giorno #${currentPuzzle.dayNumber}`;
     }
 
     setupGridData();
@@ -75,6 +74,7 @@
     renderSlots();
     renderGrid();
     updateHintDisplay();
+    updateTimerDisplay();
     setupEventListeners();
 
     if (!localStorage.getItem("cinque_in_cinque_seen_help")) {
@@ -131,6 +131,13 @@
   function renderGrid() {
     letterGrid.innerHTML = "";
 
+    const targetWord = currentPuzzle.words[currentRoundIndex] || "";
+    const targetCounts = {};
+    for (const char of targetWord) {
+      targetCounts[char] = (targetCounts[char] || 0) + 1;
+    }
+
+    const yellowRenderedCounts = {};
     const selectedTileIds = new Set(currentSelection.map(item => Number(item.tileId)));
 
     gridLetters.forEach((tile) => {
@@ -146,7 +153,14 @@
         if (selectedTileIds.has(tile.id)) {
           btn.classList.add("selected");
         } else if (yellowTileIds.has(tile.id)) {
-          btn.classList.add("present-hint");
+          // Limita rigorosamente le tessere gialle al conteggio reale nella parola target
+          const currentCount = yellowRenderedCounts[tile.letter] || 0;
+          const maxAllowed = targetCounts[tile.letter] || 0;
+
+          if (currentCount < maxAllowed) {
+            btn.classList.add("present-hint");
+            yellowRenderedCounts[tile.letter] = currentCount + 1;
+          }
         }
       }
 
@@ -194,6 +208,7 @@
 
     renderSlots();
     renderGrid();
+    saveGameState();
   }
 
   function handleBackspace() {
@@ -201,6 +216,7 @@
     currentSelection.pop();
     renderSlots();
     renderGrid();
+    saveGameState();
   }
 
   function handleSubmit() {
@@ -216,13 +232,18 @@
     const enteredWord = currentSelection.map(item => item.letter).join("");
     const targetWord = currentPuzzle.words[currentRoundIndex];
 
-    // VERIFICA VALIDITA NEL VOCABOLARIO (Anti-Cheat)
+    // Controllo Anti-Cheat
     const isTarget = (enteredWord === targetWord);
-    const isValidDictionaryWord = typeof isWordInDictionary === "function" ? isWordInDictionary(enteredWord) : true;
+    const isValidDictionaryWord = isWordInDictionary(enteredWord);
 
     if (!isTarget && !isValidDictionaryWord) {
       showToast("Parola non presente nel database! ❌");
       shakeElement(slotsContainer);
+      
+      currentSelection = [];
+      renderSlots();
+      renderGrid();
+      saveGameState();
       return;
     }
 
@@ -279,7 +300,6 @@
 
     currentSelection.forEach(item => {
       if (targetCounts[item.letter] && targetCounts[item.letter] > 0) {
-        targetCounts[item.letter]--;
         yellowTileIds.add(item.tileId);
         discoveredLetters.add(item.letter);
       }
@@ -290,6 +310,7 @@
     updateHintDisplay();
     renderSlots();
     renderGrid();
+    saveGameState();
   }
 
   // --- TIMER & PAUSA ---
@@ -301,6 +322,7 @@
     timerInterval = setInterval(() => {
       timeRemaining--;
       updateTimerDisplay();
+      saveGameState();
 
       if (timeRemaining <= 0) {
         clearInterval(timerInterval);
@@ -317,6 +339,7 @@
       isTimerRunning = false;
     }
     isPaused = true;
+    saveGameState();
 
     openModal(modalPause);
   }
@@ -326,6 +349,7 @@
     closeModal(modalPause);
     isPaused = false;
     startTimerIfNeeded();
+    saveGameState();
   }
 
   function updateTimerDisplay() {
@@ -432,6 +456,7 @@
       yellowTileIds: Array.from(yellowTileIds),
       discoveredLetters: Array.from(discoveredLetters),
       timeRemaining,
+      isTimerStarted: isTimerRunning || isPaused || timeRemaining < TOTAL_SECONDS,
       isGameOver,
       isGameWon,
       roundAttempts
@@ -460,6 +485,10 @@
       isGameOver = state.isGameOver || false;
       isGameWon = state.isGameWon || false;
       roundAttempts = state.roundAttempts || [0, 0, 0, 0, 0];
+
+      if (state.isTimerStarted && !isGameOver) {
+        startTimerIfNeeded();
+      }
 
       updateTimerDisplay();
       renderRoundTracker();
@@ -532,7 +561,7 @@
     const secs = elapsed % 60;
     const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 
-    let text = `5 in 5 (v${APP_VERSION}) • Giorno #${currentPuzzle.dayNumber}\n`;
+    let text = `5 in 5 • Giorno #${currentPuzzle.dayNumber}\n`;
     text += isGameWon ? `Completato in ${timeStr} ⏱️\n\n` : `Tempo scaduto ⌛\n\n`;
 
     for (let i = 0; i < ROUND_LENGTHS.length; i++) {
