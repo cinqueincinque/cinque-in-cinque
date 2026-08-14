@@ -1,6 +1,5 @@
 // ==========================================================================
-// 5 IN 5 - DIZIONARIO ITALIANO CURATO E VALIDATO (dictionary.js)
-// Vocaboli italiani reali, comuni, senza troncamenti e con lunghezze esatte.
+// 5 IN 5 - DIZIONARIO ITALIANO CURATO & MOTORE ANTI-CHEAT (dictionary.js)
 // ==========================================================================
 
 const RAW_WORDS_4 = [
@@ -104,19 +103,32 @@ const RAW_WORDS_8 = [
   "ATTIVITA", "AUTODROM", "AUTONOMO", "AUTORITA", "AVANZATA", "AVVENIRE", "AVVOCATO", "BAGAGLIO", "BAGNANTE", "BALLETTO",
   "BANCOMAT", "BANDIERA", "BARBIERE", "BATTERIA", "BATTEZZO", "BELLEZZA", "BENFATTO", "BILANCIA", "BIOLOGIA", "BOCCETTA",
   "BORGHESE", "BOTTIGLIA", "BOZZETTO", "BURRASCA", "CALAMITA", "CAMPAGNA", "CAMPIONE", "CANTIERE", "CAPACITA", "CAPITALE",
-  "CAPITANO", "CAPRICCI", "CARATTER", "CARCIOFO", "CARRELLO", "CARRIERA", "CASTAGNA", "CAVALIER", "CERAMICA", "CERVELLO",
-  "CHIAREZZA", "CHITARRA", "CIABATTA", "CILIEGIO", "CINGHIAL", "CINQUINA", "CITTADIN", "COMPUTER", "CONCERTO", "CONDOTTA",
-  "CONFUSIO", "CORAGGIO", "COSTANZA", "CREATIVO", "CUSTODIA", "DELICATO", "DEPOSITO", "DINAMICA", "DISCESA", "DISTANZA",
-  "DOLCEZZA", "ELEGANZA", "ELEFANTE", "ESPRESSO", "FAMIGLIA", "FANTASIA", "FERROVIA", "FOGLIAME", "FORTUNATO", "FOTOGRAF",
-  "FRATELLO", "GELATERI", "GIARDINI", "GIORNATA", "GIRASOLE", "IMMAGINE", "INGRANAG", "INSONNIA", "LANTERNA", "MAESTOSO",
-  "MERAVIGL", "MONTAGNA", "OFFICINA", "ORIZZONTE", "OROLOGIO", "PANORAMA", "PENSIERO", "PRESENZA", "RACCONTO", "SENTIERO",
+  "CAPITANO", "CAPRICCI", "CARRELLO", "CARRIERA", "CASTAGNA", "CAVALIER", "CERAMICA", "CERVELLO", "CHITARRA", "CIABATTA",
+  "CILIEGIO", "CINQUINA", "COMPUTER", "CONCERTO", "CONDOTTA", "CORAGGIO", "COSTANZA", "CREATIVO", "CUSTODIA", "DELICATO",
+  "DEPOSITO", "DINAMICA", "DISCESA", "DISTANZA", "DOLCEZZA", "ELEGANZA", "ELEFANTE", "ESPRESSO", "FAMIGLIA", "FANTASIA",
+  "FERROVIA", "FOGLIAME", "FORTUNATO", "FRATELLO", "GIARDINI", "GIORNATA", "GIRASOLE", "IMMAGINE", "INSONNIA", "LANTERNA",
+  "MAESTOSO", "MONTAGNA", "OFFICINA", "ORIZZONTE", "OROLOGIO", "PANORAMA", "PENSIERO", "PRESENZA", "RACCONTO", "SENTIERO",
   "SERENITA", "SIMPATIA", "SPECCHIO", "SPLENDORE", "STELLATO", "TEMPORALE", "TRADIZIONE", "UNIVERSO", "ZAMPOGNA", "ZUCCHERO"
 ];
 
-// Filtro di sicurezza matematico applicato all'avvio:
-// garantisce che ogni lista contenga unicamente parole della lunghezza esatta prevista
+// Filtro matematico per lunghezze esatte
 const WORDS_4 = RAW_WORDS_4.filter(w => w.length === 4);
 const WORDS_5 = RAW_WORDS_5.filter(w => w.length === 5);
 const WORDS_6 = RAW_WORDS_6.filter(w => w.length === 6);
 const WORDS_7 = RAW_WORDS_7.filter(w => w.length === 7);
 const WORDS_8 = RAW_WORDS_8.filter(w => w.length === 8);
+
+// Insieme unificato di vocaboli validi per il controllo anti-cheat
+const ALL_VALID_WORDS_SET = new Set([
+  ...WORDS_4,
+  ...WORDS_5,
+  ...WORDS_6,
+  ...WORDS_7,
+  ...WORDS_8
+]);
+
+// Funzione di validazione dizionario
+function isWordInDictionary(word) {
+  if (!word || typeof word !== "string") return false;
+  return ALL_VALID_WORDS_SET.has(word.toUpperCase().trim());
+}
